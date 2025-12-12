@@ -136,31 +136,31 @@ jobs:
 
       - name: Zip the build
         run: |
-          mkdir -p temp/Project
-          cp -r build/${{ matrix.config.targetPlatform }}/* temp/Project/
+          mkdir -p temp/project_name
+          cp -r build/${{ matrix.config.targetPlatform }}/* temp/project_name/
       
           # Windows-specific renaming
           if [[ "${{ matrix.config.targetPlatform }}" == "StandaloneWindows64" ]]; then
-            exe_path=$(find temp/Project -maxdepth 1 -type f -name '*.exe' | head -n 1)
+            exe_path=$(find temp/project_name -maxdepth 1 -type f -name '*.exe' | head -n 1)
             if [[ -n "$exe_path" ]]; then
-              mv "$exe_path" temp/Project/Project.exe
+              mv "$exe_path" temp/project_name/project_name.exe
             fi
       
-            data_folder=$(find temp/Project -maxdepth 1 -type d -name '*_Data' | head -n 1)
+            data_folder=$(find temp/project_name -maxdepth 1 -type d -name '*_Data' | head -n 1)
             if [[ -n "$data_folder" ]]; then
-              mv "$data_folder" temp/Project/Project
+              mv "$data_folder" temp/project_name/project_name
             fi
           fi
       
           cd temp
-          zip -r ../Project-${{ matrix.config.label }}.zip Project
+          zip -r ../project_name-${{ matrix.config.label }}.zip project_name
 
       - name: Upload zipped build to release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: Release ${{ steps.version.outputs.tag }}
-          files: Project-${{ matrix.config.label }}.zip
+          files: project_name-${{ matrix.config.label }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
