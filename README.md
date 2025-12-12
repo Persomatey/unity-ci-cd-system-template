@@ -25,16 +25,23 @@ Used to manually version bump the version number. Should be in the format `X.Y.Z
         - Windows: `C:\ProgramData\Unity\Unity_lic.ulf`
         - Mac: `/Library/Application Support/Unity/Unity_lic.ulf`
         - Linux: `~/.local/share/unity3d/Unity/Unity_lic.ulf`
-2. Set up Unity Credentials 
+2. Hook up Unity Credentials 
     1. On your GitHub repo's, navigate to Setting > Secrets and variables > Actions
     2. Create three new Repository secrets
         - `UNITY_LICENSE` (Copy the contents of your license file into here)
         - `UNITY_EMAIL` (Add the email address that you use to log into Unity)
         - `UNITY_PASSWORD` (Add the password that you use to log into Unity)
-3. Copy the workflows located in `.github/workflows/` into your `.github/workflows/` (create this directory if you don't have one already.
+3. Create initial version tag
+     1. Navigate to your GitHub version tags page `github.com/username_or_org/repo_name/releases/new`
+     2. Click "Tag: Select Tag"
+     3. Set tag to v0.0.0
+     4. Click "Create"
+     5. Set "Release title" 
+4. Copy the workflows located in `.github/workflows/` into your `.github/workflows/` (create this directory if you don't have one already.
    - `build.yml`
    - `version-bump.yml`
-4. In `build.yml`'s `buildForAllSupportedPlatforms` step, include the Unity Build Profiles you want generated.
-5. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `projectPath` variable to your project folder.
-6. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `unityVersion` variable to the version of Unity you're using.
-7. In `build.yml`, ctrl+f to search for the string `project_name` and replace all instances of `project_name` with your game's name.
+5. In `build.yml`'s `buildForAllSupportedPlatforms` step, include the Unity Build Profiles you want generated.
+6. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `projectPath` variable to your project folder.
+7. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `unityVersion` variable to the version of Unity you're using
+    - Ensure it uses a version of Unity that GameCI supports on their [tags page](https://hub.docker.com/r/unityci/editor/tags). 
+8. In `build.yml`, ctrl+f to search for the string `project_name` and replace all instances of `project_name` with your game's name.
