@@ -237,29 +237,3 @@ jobs:
         with:
           name: changelog
           path: changelog.txt
-
-  notifySlack:
-    name: Notify Slack
-    runs-on: ubuntu-22.04
-    needs: generateChangelog
-    if: success()
-    steps:
-      - name: Download changelog
-        uses: actions/download-artifact@v4
-        with:
-          name: changelog
-      
-      - name: Read changelog into variable
-        id: readlog
-        run: |
-          changelog=$(cat changelog.txt)
-          changelog="${changelog//'%'/'%25'}"
-          changelog="${changelog//$'\n'/'%0A'}"
-          changelog="${changelog//$'\r'/'%0D'}"
-          echo "changelog=$changelog" >> $GITHUB_OUTPUT
-      
-      - name: Send Slack message
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data "{\"text\":\"New release published: *${{ github.ref_name }}*\n${{ github.server_url }}/${{ github.repository }}/releases/\n\n${{ steps.readlog.outputs.changelog }}\"}" \
-          ${{ secrets.SLACK_WEBHOOK_URL }}
