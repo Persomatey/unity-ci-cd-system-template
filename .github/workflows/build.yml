@@ -128,7 +128,29 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
 
+      - name: Zip the build
+        run: |
+          mkdir -p temp/project_name
+          cp -r build/${{ matrix.config.targetPlatform }}/* temp/project_name/
+          
+          # Windows-specific renaming
+          if [[ "${{ matrix.config.targetPlatform }}" == "StandaloneWindows64" ]]; then
+            exe_path=$(find temp/project_name -maxdepth 1 -type f -name '*.exe' | head -n 1)
+            if [[ -n "$exe_path" ]]; then
+              mv "$exe_path" temp/project_name/project_name.exe
+            fi
+          
+            data_folder=$(find temp/project_name -maxdepth 1 -type d -name '*_Data' | head -n 1)
+            if [[ -n "$data_folder" ]]; then
+              mv "$data_folder" temp/project_name/project_name
+            fi
+          fi
+          
+          cd temp
+          zip -r ../project_name-${{ matrix.config.label }}.zip project_name
+      
       - name: Create release
+        if: matrix.config.label == 'windows-rel'  # Only create release once
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.version.outputs.tag }}
@@ -138,28 +160,7 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Zip the build
-        run: |
-          mkdir -p temp/project_name
-          cp -r build/${{ matrix.config.targetPlatform }}/* temp/project_name/
       
-          # Windows-specific renaming
-          if [[ "${{ matrix.config.targetPlatform }}" == "StandaloneWindows64" ]]; then
-            exe_path=$(find temp/project_name -maxdepth 1 -type f -name '*.exe' | head -n 1)
-            if [[ -n "$exe_path" ]]; then
-              mv "$exe_path" temp/project_name/project_name.exe
-            fi
-      
-            data_folder=$(find temp/project_name -maxdepth 1 -type d -name '*_Data' | head -n 1)
-            if [[ -n "$data_folder" ]]; then
-              mv "$data_folder" temp/project_name/project_name
-            fi
-          fi
-      
-          cd temp
-          zip -r ../project_name-${{ matrix.config.label }}.zip project_name
-
       - name: Upload zipped build to release
         uses: softprops/action-gh-release@v1
         with:
@@ -211,31 +212,6 @@ jobs:
           
           echo "Next tag: $next_tag"
           echo "tag=$next_tag" >> $GITHUB_OUTPUT
-  
-      - name: Generate Slack-safe changelog
-        run: |
-          echo "Comparing commits from ${{ github.event.before }} to ${{ github.sha }}"
-      
-          # Get the last tag again so we can include it in the changelog header
-          last_tag=$(git tag | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
-          if [ -z "$last_tag" ]; then
-            last_tag="(none)"
-          fi
-      
-          # Generate the commit log
-          changelog=$(git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:'%h - %s%n%b%n' --reverse)
-      
-          if [ -z "$changelog" ]; then
-            changelog="No new commits in this push."
-          fi
-      
-          # Sanitize for Slack (escaping %, newlines, etc.)
-          changelog="${changelog//'%'/'%25'}"
-          changelog="${changelog//$'\n'/'\\n'}"
-          changelog="${changelog//$'\r'/'\\r'}"
-      
-          # Prepend the header with the tag info
-          echo "*Changelog (${last_tag}):*\\n$changelog" > changelog.txt
   
       - name: Upload changelog artifact
         uses: actions/upload-artifact@v4
