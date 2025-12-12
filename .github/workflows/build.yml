@@ -113,7 +113,7 @@ jobs:
         uses: game-ci/unity-builder@v4
         with:
           projectPath: unity-ci-cd-system-template
-          unityVersion: 6000.0.64f1
+          unityVersion: 6000.0.62f1
           targetPlatform: ${{ matrix.config.targetPlatform }}
           buildProfile: ${{ matrix.config.profilePath }}
           versioning: None
