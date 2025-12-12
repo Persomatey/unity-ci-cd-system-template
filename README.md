@@ -1,5 +1,24 @@
-# unity-ci-cd-system-template
-Meant to serve as a simple template CI/CD system using GameCI for Unity games using GitHub Actions. Supports [semantic versioning](https://semver.org/) (MANOR.MINOR.PATCH) with every push incrementing the PATCH number, with MAJOR and MINOR being incremented maually. This supports Unity 6's Build Profiles feature off the bat 
+# Unity CI/CD System Template 
+A simple free template CI/CD system using [GameCI](https://hub.docker.com/u/unityci) for Unity games using GitHub Actions. 
+
+You can check out the sample app on the [Releases tab](https://github.com/Persomatey/unity-ci-cd-system-template/releases) of this GitHub repo. 
+
+## Features 
+- GitHub Releases
+     - Builds get submitted to the "Releases" tab of your repo as a new release with separate .zip files for each build. Builds will likely 
+- Version numbers, last Commit SHAs, and defines are added to the project via a .json file.
+    - `\Assets\Scripts\Versioning\versioning.json` in the project which can be displayed in game (on a main menu or something if you want).
+    - Showcased in the Unity project scene.
+- Unity Build Profiles
+    - Under the `buildForAllSupportedPlatforms` job, you can change the `strategy`'s `matrix` and include whatever build profiles you want.
+- Supports [semantic versioning](https://semver.org/) (MANOR.MINOR.PATCH).
+    - Every push increments the PATCH number, with MAJOR and MINOR being incremented maually. 
+- *(Optional)* Parallel builds (to speed up development, but may need to be turned off if memory is exceeding what your runner supports).  
+    - Under the `buildForAllSupportedPlatforms` job, you can change the `strategy`'s `max-parallel` value accordingly.
+- *(Optional)* LFS support
+    - Under the `Checkout repository` step, change the `lfs` value accordingly. 
+- *(Optional)* Concurrency
+    - Under `concurrency`, set the `cancel-in-progress` value accordingly. 
 
 ## Workflows 
 
@@ -45,3 +64,18 @@ Used to manually version bump the version number. Should be in the format `X.Y.Z
 7. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `unityVersion` variable to the version of Unity you're using
     - Ensure it uses a version of Unity that GameCI supports on their [tags page](https://hub.docker.com/r/unityci/editor/tags). 
 8. In `build.yml`, ctrl+f to search for the string `project_name` and replace all instances of `project_name` with your game's name.
+
+## Future Plans 
+*No plans on when I'd release these features, would likely depend on my needs for a specific project/boredom/random interest in moving this project along.*
+- Include mutliple workflow concurrency
+- Include platform and included defines in .json
+- Android build support
+- iOS build support
+- VR build support 
+- itch.io CD
+- Steam CD
+- Epic Games CD 
+- Slack notifications webhook
+- Google Meets notifications webhook
+- Discord notifications webhook
+- Microsoft Teams notifications webhook 
