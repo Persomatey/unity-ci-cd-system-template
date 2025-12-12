@@ -1,0 +1,265 @@
+name: Build project
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: unity-build
+  cancel-in-progress: false
+
+jobs:
+  buildForAllSupportedPlatforms:
+    name: Building ${{ matrix.config.label }}
+    runs-on: runnername
+    strategy:
+      fail-fast: false
+      max-parallel: 1  # Build one at a time 
+      matrix:
+        config:
+          - { targetPlatform: "StandaloneWindows64", profilePath: "Assets/Settings/Build Profiles/windows-rel.asset", label: "windows-rel" }
+          - { targetPlatform: "StandaloneWindows64", profilePath: "Assets/Settings/Build Profiles/windows-dev.asset", label: "windows-dev" }
+          #- { targetPlatform: "StandaloneLinux64", profilePath: "Assets/Settings/Build Profiles/linux-main.asset", label: "linux-main" }
+          #- { targetPlatform: "StandaloneLinux64", profilePath: "Assets/Settings/Build Profiles/linux-test.asset", label: "linux-test" }
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Determine next version tag
+        id: version
+        run: |
+          git fetch --tags
+          last_tag=$(git tag | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
+          echo "Last tag: $last_tag"
+          
+          # Get current branch name
+          current_branch=$(echo "${{ github.ref }}" | sed 's|refs/heads/||')
+          echo "Current branch: $current_branch"
+          
+          if [[ -z "$last_tag" ]]; then
+            last_tag="v0.0.0"
+          fi
+          
+          if [[ "$current_branch" == "main" ]]; then
+            # Main branch: increment version
+            base=${last_tag%.*}
+            minor=${last_tag##*.}
+            next_tag="${base}.$((minor + 1))"
+          else
+            # Other branches: use last tag with branch name suffix
+            # Clean branch name (replace / with -, remove special characters)
+            clean_branch=$(echo "$current_branch" | sed 's/[^a-zA-Z0-9._-]/-/g')
+            next_tag="${last_tag}-${clean_branch}"
+          fi
+          
+          echo "Next tag: $next_tag"
+          echo "tag=$next_tag" >> $GITHUB_OUTPUT
+          
+      - name: Generate commit log for this push
+        id: changelog
+        run: |
+          echo "Comparing commits from ${{ github.event.before }} to ${{ github.sha }}"
+
+          changelog=$(git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:'**%h** - %s%n%b%n' --reverse)
+
+          if [ -z "$changelog" ]; then
+            changelog="No new commits in this push."
+          fi
+
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "$changelog" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      
+      - name: Upload changelog artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: changelog
+          path: changelog.txt
+          
+      - name: Cache Library
+        uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-${{ matrix.targetPlatform }}
+          restore-keys: Library-
+
+      - name: Free up disk space
+        uses: jlumbroso/free-disk-space@v1.3.1
+
+      - name: Update versioning JSON
+        run: |
+          commit_sha=$(git rev-parse --short HEAD)
+          jq -n \
+            --arg version "${{ steps.version.outputs.tag }}" \
+            --arg commit "$commit_sha" \
+            '{version: $version, commit: $commit}' \
+            > unity-ci-cd-system-template/Assets/Scripts/Versioning/version.json
+
+      - name: Log memory stats
+        run: |
+          echo "Free memory (MB):"
+          free -m
+          echo "Disk space (GB):"
+          df -h
+
+      - name: Build with Unity (Build Profile)
+        uses: game-ci/unity-builder@v4
+        with:
+          projectPath: unity-ci-cd-system-template
+          unityVersion: 6000.0.64f1
+          targetPlatform: ${{ matrix.config.targetPlatform }}
+          buildProfile: ${{ matrix.config.profilePath }}
+          versioning: None
+          customParameters: -logFile -
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.tag }}
+          body: ${{ env.CHANGELOG }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Zip the build
+        run: |
+          mkdir -p temp/Project
+          cp -r build/${{ matrix.config.targetPlatform }}/* temp/Project/
+      
+          # Windows-specific renaming
+          if [[ "${{ matrix.config.targetPlatform }}" == "StandaloneWindows64" ]]; then
+            exe_path=$(find temp/Project -maxdepth 1 -type f -name '*.exe' | head -n 1)
+            if [[ -n "$exe_path" ]]; then
+              mv "$exe_path" temp/Project/Project.exe
+            fi
+      
+            data_folder=$(find temp/Project -maxdepth 1 -type d -name '*_Data' | head -n 1)
+            if [[ -n "$data_folder" ]]; then
+              mv "$data_folder" temp/Project/Project
+            fi
+          fi
+      
+          cd temp
+          zip -r ../Project-${{ matrix.config.label }}.zip Project
+
+      - name: Upload zipped build to release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.tag }}
+          files: Project-${{ matrix.config.label }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  generateChangelog:
+    name: Generate Changelog
+    runs-on: ubuntu-22.04
+    needs: buildForAllSupportedPlatforms
+    outputs:
+      version: ${{ steps.version.outputs.tag }}
+      changelog: ${{ steps.readlog.outputs.changelog }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+  
+      - name: Determine next version tag
+        id: version
+        run: |
+          git fetch --tags
+          last_tag=$(git tag | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
+          echo "Last tag: $last_tag"
+          
+          # Get current branch name
+          current_branch=$(echo "${{ github.ref }}" | sed 's|refs/heads/||')
+          echo "Current branch: $current_branch"
+          
+          if [[ -z "$last_tag" ]]; then
+            last_tag="v0.0.0"
+          fi
+          
+          if [[ "$current_branch" == "main" ]]; then
+            # Main branch: increment version
+            base=${last_tag%.*}
+            minor=${last_tag##*.}
+            next_tag="${base}.$((minor + 1))"
+          else
+            # Other branches: use last tag with branch name suffix
+            # Clean branch name (replace / with -, remove special characters)
+            clean_branch=$(echo "$current_branch" | sed 's/[^a-zA-Z0-9._-]/-/g')
+            next_tag="${last_tag}-${clean_branch}"
+          fi
+          
+          echo "Next tag: $next_tag"
+          echo "tag=$next_tag" >> $GITHUB_OUTPUT
+  
+      - name: Generate Slack-safe changelog
+        run: |
+          echo "Comparing commits from ${{ github.event.before }} to ${{ github.sha }}"
+      
+          # Get the last tag again so we can include it in the changelog header
+          last_tag=$(git tag | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
+          if [ -z "$last_tag" ]; then
+            last_tag="(none)"
+          fi
+      
+          # Generate the commit log
+          changelog=$(git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:'%h - %s%n%b%n' --reverse)
+      
+          if [ -z "$changelog" ]; then
+            changelog="No new commits in this push."
+          fi
+      
+          # Sanitize for Slack (escaping %, newlines, etc.)
+          changelog="${changelog//'%'/'%25'}"
+          changelog="${changelog//$'\n'/'\\n'}"
+          changelog="${changelog//$'\r'/'\\r'}"
+      
+          # Prepend the header with the tag info
+          echo "*Changelog (${last_tag}):*\\n$changelog" > changelog.txt
+  
+      - name: Upload changelog artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: changelog
+          path: changelog.txt
+
+  notifySlack:
+    name: Notify Slack
+    runs-on: ubuntu-22.04
+    needs: generateChangelog
+    if: success()
+    steps:
+      - name: Download changelog
+        uses: actions/download-artifact@v4
+        with:
+          name: changelog
+      
+      - name: Read changelog into variable
+        id: readlog
+        run: |
+          changelog=$(cat changelog.txt)
+          changelog="${changelog//'%'/'%25'}"
+          changelog="${changelog//$'\n'/'%0A'}"
+          changelog="${changelog//$'\r'/'%0D'}"
+          echo "changelog=$changelog" >> $GITHUB_OUTPUT
+      
+      - name: Send Slack message
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"New release published: *${{ github.ref_name }}*\n${{ github.server_url }}/${{ github.repository }}/releases/\n\n${{ steps.readlog.outputs.changelog }}\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
