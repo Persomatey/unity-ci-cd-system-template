@@ -7,6 +7,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write 
+
 concurrency:
   group: unity-build
   cancel-in-progress: false
@@ -22,7 +25,7 @@ jobs:
         config:
           - { targetPlatform: "StandaloneWindows64", profilePath: "Assets/Settings/Build Profiles/windows-rel.asset", label: "windows-rel" }
           - { targetPlatform: "StandaloneWindows64", profilePath: "Assets/Settings/Build Profiles/windows-dev.asset", label: "windows-dev" }
-          #- { targetPlatform: "StandaloneLinux64", profilePath: "Assets/Settings/Build Profiles/linux-main.asset", label: "linux-main" }
+          #- { targetPlatform: "StandaloneLinux64", profilePath: "Assets/Settings/Build Profiles/linux-main.asset", label: "linux-rel" }
           #- { targetPlatform: "StandaloneLinux64", profilePath: "Assets/Settings/Build Profiles/linux-test.asset", label: "linux-test" }
 
     steps:
@@ -30,7 +33,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          lfs: true
+          lfs: false
 
       - name: Determine next version tag
         id: version
