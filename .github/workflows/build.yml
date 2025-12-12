@@ -14,7 +14,7 @@ concurrency:
 jobs:
   buildForAllSupportedPlatforms:
     name: Building ${{ matrix.config.label }}
-    runs-on: runnername
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       max-parallel: 1  # Build one at a time 
