@@ -102,6 +102,11 @@ jobs:
             if [[ -n "$data_folder" ]]; then
               mv "$data_folder" temp/project_name/project_name_Data
             fi
+            
+            burst_folder=$(find temp/project_name -maxdepth 1 -type d -name '*_BurstDebugInformation_DoNotShip' | head -n 1)
+            if [[ -n "$burst_folder" ]]; then
+              mv "$burst_folder" temp/project_name/project_name_BurstDebugInformation_DoNotShip
+            fi
           fi
       
           cd temp
