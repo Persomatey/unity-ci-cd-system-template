@@ -27,8 +27,8 @@ jobs:
           - { targetPlatform: "StandaloneWindows64", profilePath: "Assets/Settings/Build Profiles/windows-dev.asset", label: "windows-dev" }
           - { targetPlatform: "StandaloneLinux64", profilePath: "Assets/Settings/Build Profiles/linux-rel.asset", label: "linux-rel" }
           - { targetPlatform: "StandaloneLinux64", profilePath: "Assets/Settings/Build Profiles/linux-dev.asset", label: "linux-dev" }
-          - { targetPlatform: "WebGL", profilePath: "Assets/Settings/Build Profiles/webgl-rel.asset", label: "webgl-rel" }
-          - { targetPlatform: "WebGL", profilePath: "Assets/Settings/Build Profiles/webgl-dev.asset", label: "webgl-dev" }
+          - { targetPlatform: "WebGL", profilePath: "Assets/Settings/Build Profiles/web-rel.asset", label: "web-rel" }
+          - { targetPlatform: "WebGL", profilePath: "Assets/Settings/Build Profiles/web-dev.asset", label: "web-dev" }
 
     steps:
       - name: Checkout repository
