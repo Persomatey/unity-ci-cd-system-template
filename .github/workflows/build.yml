@@ -14,6 +14,9 @@ concurrency:
   group: unity-build
   cancel-in-progress: false
 
+env:
+  PROJECT_NAME: project_name
+
 jobs:
   buildForAllSupportedPlatforms:
     name: Building ${{ matrix.config.label }}
@@ -80,24 +83,24 @@ jobs:
 
       - name: Update Unity project version
         run: |
-          sed -i "s/bundleVersion: .*/bundleVersion: ${{ steps.version.outputs.unity_version }}/" project_name/ProjectSettings/ProjectSettings.asset
+          sed -i "s/bundleVersion: .*/bundleVersion: ${{ steps.version.outputs.unity_version }}/" ${{ env.PROJECT_NAME }}/ProjectSettings/ProjectSettings.asset
       
       - name: Update versioning JSON
         run: |
           commit_sha=$(git rev-parse HEAD)
-          mkdir -p project_name/Assets/Scripts/Versioning
+          mkdir -p ${{ env.PROJECT_NAME }}/Assets/Scripts/Versioning
           jq -n \
             --arg version "${{ steps.version.outputs.unity_version }}" \
             --arg commit "$commit_sha" \
             '{version: $version, commit: $commit}' \
-            > project_name/Assets/Scripts/Versioning/versioning.json
+            > ${{ env.PROJECT_NAME }}/Assets/Scripts/Versioning/versioning.json
           echo "Created versioning.json:"
-          cat project_name/Assets/Scripts/Versioning/versioning.json
+          cat ${{ env.PROJECT_NAME }}/Assets/Scripts/Versioning/versioning.json
 
       - name: Build with Unity (Build Profile)
         uses: game-ci/unity-builder@v4
         with:
-          projectPath: project_name
+          projectPath: ${{ env.PROJECT_NAME }}
           unityVersion: 6000.0.62f1
           targetPlatform: ${{ matrix.config.targetPlatform }}
           buildProfile: ${{ matrix.config.profilePath }}
@@ -110,38 +113,38 @@ jobs:
       
       - name: Zip the build
         run: |
-          mkdir -p temp/project_name
-          cp -r build/${{ matrix.config.targetPlatform }}/* temp/project_name/
+          mkdir -p temp/${{ env.PROJECT_NAME }}
+          cp -r build/${{ matrix.config.targetPlatform }}/* temp/${{ env.PROJECT_NAME }}/
       
           # Windows-specific renaming
           if [[ "${{ matrix.config.targetPlatform }}" == "StandaloneWindows64" ]]; then
             # Rename .exe file if it's not already named correctly
-            exe_path=$(find temp/project_name -maxdepth 1 -type f -name '*.exe' ! -name 'project_name.exe' | head -n 1)
+            exe_path=$(find temp/${{ env.PROJECT_NAME }} -maxdepth 1 -type f -name '*.exe' ! -name '${{ env.PROJECT_NAME }}.exe' | head -n 1)
             if [[ -n "$exe_path" ]]; then
-              mv "$exe_path" temp/project_name/project_name.exe
+              mv "$exe_path" temp/${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}.exe
             fi
       
             # Rename _Data folder if it's not already named correctly
-            data_folder=$(find temp/project_name -maxdepth 1 -type d -name '*_Data' ! -name 'project_name_Data' | head -n 1)
+            data_folder=$(find temp/${{ env.PROJECT_NAME }} -maxdepth 1 -type d -name '*_Data' ! -name '${{ env.PROJECT_NAME }}_Data' | head -n 1)
             if [[ -n "$data_folder" ]]; then
-              mv "$data_folder" temp/project_name/project_name_Data
+              mv "$data_folder" temp/${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}_Data
             fi
             
             # Rename _BurstDebugInformation_DoNotShip folder if it's not already named correctly
-            burst_folder=$(find temp/project_name -maxdepth 1 -type d -name '*_BurstDebugInformation_DoNotShip' ! -name 'project_name_BurstDebugInformation_DoNotShip' | head -n 1)
+            burst_folder=$(find temp/${{ env.PROJECT_NAME }} -maxdepth 1 -type d -name '*_BurstDebugInformation_DoNotShip' ! -name '${{ env.PROJECT_NAME }}_BurstDebugInformation_DoNotShip' | head -n 1)
             if [[ -n "$burst_folder" ]]; then
-              mv "$burst_folder" temp/project_name/project_name_BurstDebugInformation_DoNotShip
+              mv "$burst_folder" temp/${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}_BurstDebugInformation_DoNotShip
             fi
           fi
       
           cd temp
-          zip -r ../project_name-${{ matrix.config.label }}.zip project_name
+          zip -r ../${{ env.PROJECT_NAME }}-${{ matrix.config.label }}.zip ${{ env.PROJECT_NAME }}
       
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.config.label }}
-          path: project_name-${{ matrix.config.label }}.zip
+          path: ${{ env.PROJECT_NAME }}-${{ matrix.config.label }}.zip
           retention-days: 1
 
   generateChangelog:
@@ -236,6 +239,6 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            project_name-*.zip
+            ${{ env.PROJECT_NAME }}-*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
