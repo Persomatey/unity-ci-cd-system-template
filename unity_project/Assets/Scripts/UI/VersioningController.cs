@@ -22,23 +22,23 @@ public class VersioningController : MonoBehaviour
 
 		Debug.Log($"Loading {jsonFile.name}'s contents:\n{jsonFile.text}"); 
 
-		versionTMP.text = $"v{data.version}";
-		commitTMP.text = data.commit;
+		versionTMP.text = $"Version: v{data.version}";
+		commitTMP.text = $"Commit: {data.commit}";
 	}
 
 	private void UpdateDefinesTMP()
 	{
 		if (Application.isEditor)
 		{
-			definesTMP.text = "EDI";
+			definesTMP.text = "Defines: EDI";
 		}
 
 #if DEV
-		definesTMP.text = "DEV"; 
+		definesTMP.text = "Defines: DEV"; 
 #endif
 
 #if REL
-		definesTMP.text = "REL"; 
+		definesTMP.text = "Defines: REL"; 
 #endif
 	}
 
