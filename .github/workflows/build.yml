@@ -50,12 +50,11 @@ jobs:
       - name: Update versioning JSON
         run: |
           commit_sha=$(git rev-parse --short HEAD)
-          # Use a placeholder version for now, or skip this if not critical during build
           jq -n \
-            --arg version "dev-build" \
+            --arg version "${{ steps.version.outputs.tag }}" \
             --arg commit "$commit_sha" \
             '{version: $version, commit: $commit}' \
-            > unity-ci-cd-system-template/Assets/Scripts/Versioning/version.json
+            > Cobalt_Prototype/Assets/Scripts/Versioning/version.json
 
       - name: Build with Unity (Build Profile)
         uses: game-ci/unity-builder@v4
@@ -70,33 +69,6 @@ jobs:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-
-      - name: Write version info to build output
-        run: |
-          # Get version from generateChangelog job output, or calculate it here
-          git fetch --tags
-          last_tag=$(git tag | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
-          if [[ -z "$last_tag" ]]; then
-            last_tag="v0.0.0"
-          fi
-          current_branch=$(echo "${{ github.ref }}" | sed 's|refs/heads/||')
-          if [[ "$current_branch" == "main" ]]; then
-            base=${last_tag%.*}
-            minor=${last_tag##*.}
-            next_tag="${base}.$((minor + 1))"
-          else
-            clean_branch=$(echo "$current_branch" | sed 's/[^a-zA-Z0-9._-]/-/g')
-            next_tag="${last_tag}-${clean_branch}"
-          fi
-          
-          commit_sha=$(git rev-parse --short HEAD)
-          
-          # Write to the build output directory
-          jq -n \
-            --arg version "$next_tag" \
-            --arg commit "$commit_sha" \
-            '{version: $version, commit: $commit}' \
-            > build/${{ matrix.config.targetPlatform }}/version.json
       
       - name: Zip the build
         run: |
