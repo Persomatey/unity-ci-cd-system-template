@@ -91,7 +91,7 @@ jobs:
         run: |
           sed -i "s/productName: .*/productName: ${{ env.PROJECT_NAME }}/" ${{ env.PROJECT_PATH }}/ProjectSettings/ProjectSettings.asset
       
-      - name: Update versioning JSON
+      - name: Update JSON data 
         run: |
           commit_sha=$(git rev-parse HEAD)
           mkdir -p ${{ env.PROJECT_PATH }}/Assets/Scripts/Versioning
