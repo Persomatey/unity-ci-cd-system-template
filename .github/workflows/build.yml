@@ -47,18 +47,49 @@ jobs:
       - name: Free up disk space
         uses: jlumbroso/free-disk-space@v1.3.1
 
+      - name: Determine version
+        id: version
+        run: |
+          git fetch --tags
+          last_tag=$(git tag | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
+          echo "Last tag: $last_tag"
+          
+          current_branch=$(echo "${{ github.ref }}" | sed 's|refs/heads/||')
+          echo "Current branch: $current_branch"
+          
+          if [[ -z "$last_tag" ]]; then
+            last_tag="v0.0.0"
+          fi
+          
+          if [[ "$current_branch" == "main" ]]; then
+            base=${last_tag%.*}
+            minor=${last_tag##*.}
+            next_tag="${base}.$((minor + 1))"
+          else
+            clean_branch=$(echo "$current_branch" | sed 's/[^a-zA-Z0-9._-]/-/g')
+            next_tag="${last_tag}-${clean_branch}"
+          fi
+          
+          # Remove 'v' prefix for Unity version
+          unity_version="${next_tag#v}"
+          
+          echo "Next tag: $next_tag"
+          echo "Unity version: $unity_version"
+          echo "tag=$next_tag" >> $GITHUB_OUTPUT
+          echo "unity_version=$unity_version" >> $GITHUB_OUTPUT
+
       - name: Update Unity project version
         run: |
-          sed -i "s/bundleVersion: .*/bundleVersion: ${{ steps.calc_version.outputs.unity_version }}/" project_name/ProjectSettings/ProjectSettings.asset
+          sed -i "s/bundleVersion: .*/bundleVersion: ${{ steps.version.outputs.unity_version }}/" project_name/ProjectSettings/ProjectSettings.asset
       
-            - name: Update versioning JSON
-              run: |
-                commit_sha=$(git rev-parse --short HEAD)
-                jq -n \
-                  --arg version "${{ steps.version.outputs.tag }}" \
-                  --arg commit "$commit_sha" \
-                  '{version: $version, commit: $commit}' \
-                  > project_name/Assets/Scripts/Versioning/version.json
+      - name: Update versioning JSON
+        run: |
+          commit_sha=$(git rev-parse --short HEAD)
+          jq -n \
+            --arg version "${{ steps.version.outputs.tag }}" \
+            --arg commit "$commit_sha" \
+            '{version: $version, commit: $commit}' \
+            > project_name/Assets/Scripts/Versioning/version.json
 
       - name: Build with Unity (Build Profile)
         uses: game-ci/unity-builder@v4
