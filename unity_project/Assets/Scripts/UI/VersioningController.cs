@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class VersioningController : MonoBehaviour
 {
+	[SerializeField] private TextMeshProUGUI projectNameTMP;
 	[SerializeField] private TextMeshProUGUI versionTMP;
 	[SerializeField] private TextMeshProUGUI commitTMP;
 	[SerializeField] private TextMeshProUGUI definesTMP;
@@ -20,9 +21,10 @@ public class VersioningController : MonoBehaviour
 	{
 		data = JsonUtility.FromJson<VersionData>(jsonFile.text);
 
-		Debug.Log($"Loading {jsonFile.name}'s contents:\n{jsonFile.text}"); 
+		Debug.Log($"Loading {jsonFile.name}'s contents:\n{jsonFile.text}");
 
-		versionTMP.text = $"Version: v{data.version}";
+		projectNameTMP.text = $"Name: {Application.productName}";
+		versionTMP.text = $"Version: v{Application.version}";
 		commitTMP.text = $"Commit: {data.commit}";
 	}
 
@@ -45,7 +47,6 @@ public class VersioningController : MonoBehaviour
 	[System.Serializable]
 	public class VersionData
 	{
-		public string version;
 		public string commit;
 	}
 }
