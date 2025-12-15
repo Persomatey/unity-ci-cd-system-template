@@ -85,19 +85,19 @@ jobs:
 
       - name: Update Unity project version
         run: |
-          sed -i "s/bundleVersion: .*/bundleVersion: ${{ steps.version.outputs.unity_version }}/" ${{ env.PROJECT_NAME }}/ProjectSettings/ProjectSettings.asset
+          sed -i "s/bundleVersion: .*/bundleVersion: ${{ steps.version.outputs.unity_version }}/" ${{ env.PROJECT_PATH }}/ProjectSettings/ProjectSettings.asset
       
       - name: Update versioning JSON
         run: |
           commit_sha=$(git rev-parse HEAD)
-          mkdir -p ${{ env.PROJECT_NAME }}/Assets/Scripts/Versioning
+          mkdir -p ${{ env.PROJECT_PATH }}/Assets/Scripts/Versioning
           jq -n \
             --arg version "${{ steps.version.outputs.unity_version }}" \
             --arg commit "$commit_sha" \
             '{version: $version, commit: $commit}' \
-            > ${{ env.PROJECT_NAME }}/Assets/Scripts/Versioning/versioning.json
+            > ${{ env.PROJECT_PATH }}/Assets/Scripts/Versioning/versioning.json
           echo "Created versioning.json:"
-          cat ${{ env.PROJECT_NAME }}/Assets/Scripts/Versioning/versioning.json
+          cat ${{ env.PROJECT_PATH }}/Assets/Scripts/Versioning/versioning.json
 
       - name: Build with Unity (Build Profile)
         uses: game-ci/unity-builder@v4
