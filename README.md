@@ -76,7 +76,7 @@ Used to manually version bump the version number. Should be in the format `X.Y.Z
 
 ## Future Plans 
 *No plans on when I'd release these features, would likely depend on my needs for a specific project/boredom/random interest in moving this project along.*
-- Include mutliple workflow concurrency
+- Include multiple workflow concurrency
 - Include platform and included defines in .json
 - Android build support
 - iOS build support
