@@ -47,14 +47,18 @@ jobs:
       - name: Free up disk space
         uses: jlumbroso/free-disk-space@v1.3.1
 
-      - name: Update versioning JSON
+      - name: Update Unity project version
         run: |
-          commit_sha=$(git rev-parse --short HEAD)
-          jq -n \
-            --arg version "${{ steps.version.outputs.tag }}" \
-            --arg commit "$commit_sha" \
-            '{version: $version, commit: $commit}' \
-            > project_name/Assets/Scripts/Versioning/version.json
+          sed -i "s/bundleVersion: .*/bundleVersion: ${{ steps.calc_version.outputs.unity_version }}/" project_name/ProjectSettings/ProjectSettings.asset
+      
+            - name: Update versioning JSON
+              run: |
+                commit_sha=$(git rev-parse --short HEAD)
+                jq -n \
+                  --arg version "${{ steps.version.outputs.tag }}" \
+                  --arg commit "$commit_sha" \
+                  '{version: $version, commit: $commit}' \
+                  > project_name/Assets/Scripts/Versioning/version.json
 
       - name: Build with Unity (Build Profile)
         uses: game-ci/unity-builder@v4
