@@ -17,7 +17,7 @@ concurrency:
 env:
   PROJECT_NAME: project_name
   UNITY_VERSION: 6000.0.62f1
-  PROJECT_PATH: project_path
+  PROJECT_PATH: project_name
 
 jobs:
   buildForAllSupportedPlatforms:
