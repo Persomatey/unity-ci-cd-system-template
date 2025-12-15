@@ -7,20 +7,24 @@ You can check out the sample app on the [Releases tab](https://github.com/Persom
 - GitHub Releases
      - Builds get submitted to the "Releases" tab of your repo as a new release with separate .zip files for each build. 
 - Version numbers, last Commit SHAs, and defines are added to the project via a .json file.
-    - `\Assets\Scripts\Versioning\versioning.json` in the project which can be displayed in game (on a main menu or something if you want).
-    - Showcased in the Unity project scene.
+     - `\Assets\Scripts\Versioning\versioning.json` in the project which can be displayed in game (on a main menu or something if you want).
+     - Showcased in the Unity project scene.
 - Unity Build Profiles
-    - Under the `buildForAllSupportedPlatforms` job, you can change the `strategy`'s `matrix` and include whatever build profiles you want.
-    - Showcased in the differences between the built Unity projects, including the defines included in the Build Profiles as displayed in the Unity project scene. 
+     - Under the `buildForAllSupportedPlatforms` job, you can change the `strategy`'s `matrix` and include whatever build profiles you want.
+     - Showcased in the differences between the built Unity projects, including the defines included in the Build Profiles as displayed in the Unity project scene.
 - Supports [semantic versioning](https://semver.org/) (MAJOR.MINOR.PATCH).
-    - Every push increments the PATCH number, with MAJOR and MINOR being incremented maually. 
+     - Every push increments the PATCH number, with MAJOR and MINOR being incremented maually. 
 - *(Optional)* Parallel builds (to speed up development, but may need to be turned off if memory is exceeding what your runner supports).  
-    - Under the `buildForAllSupportedPlatforms` job, you can change the `strategy`'s `max-parallel` value accordingly.
+     - Under the `buildForAllSupportedPlatforms` job, you can change the `strategy`'s `max-parallel` value accordingly.
+- *(Optional)* Fail fast support, so you're not creating multiple builds if one fails.
+     - Under the `buildForAllSupportedPlatforms` job, you can change the `strategy`'s `fail-fast` accordingly.
+     - It's set as `false` by default because sometimes there could be a problem with a single build profile or platform -- but it's there if you're stingy with your runner minutes. 
 - *(Optional)* LFS support
-    - Under the `Checkout repository` step, change the `lfs` value accordingly. 
+     - Under the `Checkout repository` step, change the `lfs` value accordingly. 
 - *(Optional)* Concurrent workflows 
-    - Under `concurrency`, set the `cancel-in-progress` value accordingly.
-    - This could result in later builds having an earlier version number if you're not careful though, so use as needed. 
+     - Under `concurrency`, set the `cancel-in-progress` value accordingly.
+     - This is mostly to save on runner minutes, but if you don't care about that, leaving it `false` allows you to better track down a bug, especially when collaborating with multiple devs or if you have long build times. 
+
 
 ## Workflows 
 
@@ -59,14 +63,16 @@ Used to manually version bump the version number. Should be in the format `X.Y.Z
      4. Click "Create"
      5. Set "Release title"
      6. Click "Publish release" 
-4. Copy the workflows located in this repo's `.github/workflows/` into your `.github/workflows/` (create this directory if you don't have one already.
+4. Copy the workflows located in this repo's `.github/workflows/` into your `.github/workflows/` (create this directory if you don't have one already
    - `build.yml`
    - `version-bump.yml`
-5. In `build.yml`'s `buildForAllSupportedPlatforms` step, include the Unity Build Profiles you want generated.
-6. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `projectPath` variable to your project folder.
-7. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `unityVersion` variable to the version of Unity you're using
-    - Ensure it uses a version of Unity that GameCI supports on their [tags page](https://hub.docker.com/r/unityci/editor/tags). 
-8. In `build.yml`, ctrl+f to search for the string `project_name` and replace all instances of `project_name` with your game's name.
+5. In `build.yml`'s `buildForAllSupportedPlatforms` step, include the Unity Build Profiles you want generated
+6. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `projectPath` variable to your project folder ????????????????????????????????
+7. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `unityVersion` variable to the version of Unity you're using ?????????????????????????????
+    - Ensure it uses a version of Unity that GameCI supports on their [tags page](https://hub.docker.com/r/unityci/editor/tags)
+8. In `build.yml`, in the `env`, set the `PROJECT_NAME` variable to your project's name. 
+9. In `build.yml`, in the `env`, set the `UNITY_VERSION` variable to your project's Unity version. 
+10. In `build.yml`, in the `env`, set the `PROJECT_PATH` variable to your project's path. 
 
 ## Future Plans 
 *No plans on when I'd release these features, would likely depend on my needs for a specific project/boredom/random interest in moving this project along.*
