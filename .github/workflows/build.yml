@@ -16,6 +16,8 @@ concurrency:
 
 env:
   PROJECT_NAME: project_name
+  UNITY_VERSION: 6000.0.62f1
+  PROJECT_PATH: project_path
 
 jobs:
   buildForAllSupportedPlatforms:
@@ -100,8 +102,8 @@ jobs:
       - name: Build with Unity (Build Profile)
         uses: game-ci/unity-builder@v4
         with:
-          projectPath: ${{ env.PROJECT_NAME }}
-          unityVersion: 6000.0.62f1
+          projectPath: ${{ env.PROJECT_PATH }}
+          unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ matrix.config.targetPlatform }}
           buildProfile: ${{ matrix.config.profilePath }}
           versioning: None
