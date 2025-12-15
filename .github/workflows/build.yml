@@ -84,7 +84,7 @@ jobs:
       
       - name: Update versioning JSON
         run: |
-          commit_sha=$(git rev-parse --short HEAD)
+          commit_sha=$(git rev-parse HEAD)
           mkdir -p project_name/Assets/Scripts/Versioning
           jq -n \
             --arg version "${{ steps.version.outputs.unity_version }}" \
