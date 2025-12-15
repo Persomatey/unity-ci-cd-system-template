@@ -94,7 +94,7 @@ jobs:
       - name: Build with Unity (Build Profile)
         uses: game-ci/unity-builder@v4
         with:
-          projectPath: unity-ci-cd-system-template
+          projectPath: project_name
           unityVersion: 6000.0.62f1
           targetPlatform: ${{ matrix.config.targetPlatform }}
           buildProfile: ${{ matrix.config.profilePath }}
