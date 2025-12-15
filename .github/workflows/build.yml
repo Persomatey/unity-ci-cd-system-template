@@ -85,11 +85,14 @@ jobs:
       - name: Update versioning JSON
         run: |
           commit_sha=$(git rev-parse --short HEAD)
+          mkdir -p project_name/Assets/Scripts/Versioning
           jq -n \
             --arg version "${{ steps.version.outputs.tag }}" \
             --arg commit "$commit_sha" \
             '{version: $version, commit: $commit}' \
             > project_name/Assets/Scripts/Versioning/version.json
+          echo "Created version.json:"
+          cat project_name/Assets/Scripts/Versioning/version.json
 
       - name: Build with Unity (Build Profile)
         uses: game-ci/unity-builder@v4
