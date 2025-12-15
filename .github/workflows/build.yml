@@ -86,10 +86,14 @@ jobs:
       - name: Update Unity project version
         run: |
           sed -i "s/bundleVersion: .*/bundleVersion: ${{ steps.version.outputs.unity_version }}/" ${{ env.PROJECT_PATH }}/ProjectSettings/ProjectSettings.asset
+          echo "Saved Project Settings:"
+            cat ${{ env.PROJECT_PATH }}/ProjectSettings/ProjectSettings.asset
 
       - name: Update Unity project name
         run: |
           sed -i "s/productName: .*/productName: ${{ env.PROJECT_NAME }}/" ${{ env.PROJECT_PATH }}/ProjectSettings/ProjectSettings.asset
+          echo "Saved Project Settings:"
+            cat ${{ env.PROJECT_PATH }}/ProjectSettings/ProjectSettings.asset
       
       - name: Update JSON data 
         run: |
