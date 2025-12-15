@@ -112,17 +112,20 @@ jobs:
       
           # Windows-specific renaming
           if [[ "${{ matrix.config.targetPlatform }}" == "StandaloneWindows64" ]]; then
-            exe_path=$(find temp/project_name -maxdepth 1 -type f -name '*.exe' | head -n 1)
+            # Rename .exe file if it's not already named correctly
+            exe_path=$(find temp/project_name -maxdepth 1 -type f -name '*.exe' ! -name 'project_name.exe' | head -n 1)
             if [[ -n "$exe_path" ]]; then
               mv "$exe_path" temp/project_name/project_name.exe
             fi
       
-            data_folder=$(find temp/project_name -maxdepth 1 -type d -name '*_Data' | head -n 1)
+            # Rename _Data folder if it's not already named correctly
+            data_folder=$(find temp/project_name -maxdepth 1 -type d -name '*_Data' ! -name 'project_name_Data' | head -n 1)
             if [[ -n "$data_folder" ]]; then
               mv "$data_folder" temp/project_name/project_name_Data
             fi
             
-            burst_folder=$(find temp/project_name -maxdepth 1 -type d -name '*_BurstDebugInformation_DoNotShip' | head -n 1)
+            # Rename _BurstDebugInformation_DoNotShip folder if it's not already named correctly
+            burst_folder=$(find temp/project_name -maxdepth 1 -type d -name '*_BurstDebugInformation_DoNotShip' ! -name 'project_name_BurstDebugInformation_DoNotShip' | head -n 1)
             if [[ -n "$burst_folder" ]]; then
               mv "$burst_folder" temp/project_name/project_name_BurstDebugInformation_DoNotShip
             fi
