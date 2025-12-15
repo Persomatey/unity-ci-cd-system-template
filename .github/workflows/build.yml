@@ -90,9 +90,9 @@ jobs:
             --arg version "${{ steps.version.outputs.tag }}" \
             --arg commit "$commit_sha" \
             '{version: $version, commit: $commit}' \
-            > project_name/Assets/Scripts/Versioning/version.json
-          echo "Created version.json:"
-          cat project_name/Assets/Scripts/Versioning/version.json
+            > project_name/Assets/Scripts/Versioning/versioning.json
+          echo "Created versioning.json:"
+          cat project_name/Assets/Scripts/Versioning/versioning.json
 
       - name: Build with Unity (Build Profile)
         uses: game-ci/unity-builder@v4
