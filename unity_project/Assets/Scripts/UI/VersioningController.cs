@@ -14,34 +14,39 @@ public class VersioningController : MonoBehaviour
 	private void Start()
 	{
 		JSONReader();
-		UpdateDefinesTMP();
+		UpdateTMPs();
 	}
 
 	private void JSONReader()
 	{
 		data = JsonUtility.FromJson<VersionData>(jsonFile.text);
 
-		Debug.Log($"Loading {jsonFile.name}'s contents:\n{jsonFile.text}");
-
-		projectNameTMP.text = $"Name: {Application.productName}";
-		versionTMP.text = $"Version: v{Application.version}";
-		commitTMP.text = $"Commit: {data.commit}";
+		Debug.Log($"Loaded {jsonFile.name}'s contents:\n{jsonFile.text}");
 	}
 
-	private void UpdateDefinesTMP()
+	private void UpdateTMPs()
 	{
-		if (Application.isEditor)
-		{
-			definesTMP.text = "Defines: EDI";
-		}
+		// Get data from Application 
+		projectNameTMP.text = $"Name: {Application.productName}";
+		versionTMP.text = $"Version: v{Application.version}";
 
-#if DEV
-		definesTMP.text = "Defines: DEV"; 
+		// Get data from JSON 
+		commitTMP.text = $"Commit: {data.commit}";
+
+		// Get data from Build Profile 
+		#if DEV
+		definesTMP.text = "Defines: DEV";
 #endif
 
 #if REL
 		definesTMP.text = "Defines: REL"; 
 #endif
+
+		// Extra info for if you're in editor 
+		if (Application.isEditor)
+		{
+			definesTMP.text += " (Editor)";
+		}
 	}
 
 	[System.Serializable]
