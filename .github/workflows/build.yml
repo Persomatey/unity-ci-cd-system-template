@@ -20,15 +20,15 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
-      max-parallel: 6
+      max-parallel: 4 # 6 builds at once 
       matrix:
         config:
           - { targetPlatform: "StandaloneWindows64", profilePath: "Assets/Settings/Build Profiles/windows-rel.asset", label: "windows-rel" }
           - { targetPlatform: "StandaloneWindows64", profilePath: "Assets/Settings/Build Profiles/windows-dev.asset", label: "windows-dev" }
           - { targetPlatform: "StandaloneLinux64", profilePath: "Assets/Settings/Build Profiles/linux-rel.asset", label: "linux-rel" }
           - { targetPlatform: "StandaloneLinux64", profilePath: "Assets/Settings/Build Profiles/linux-dev.asset", label: "linux-dev" }
-          - { targetPlatform: "WebGL", profilePath: "Assets/Settings/Build Profiles/web-rel.asset", label: "web-rel" }
-          - { targetPlatform: "WebGL", profilePath: "Assets/Settings/Build Profiles/web-dev.asset", label: "web-dev" }
+          #- { targetPlatform: "WebGL", profilePath: "Assets/Settings/Build Profiles/web-rel.asset", label: "web-rel" }
+          #- { targetPlatform: "WebGL", profilePath: "Assets/Settings/Build Profiles/web-dev.asset", label: "web-dev" }
 
     steps:
       - name: Checkout repository
@@ -36,12 +36,6 @@ jobs:
         with:
           fetch-depth: 0
           lfs: false
-
-      # Remove the "Determine next version tag" step - we'll do this once in the release job
-      
-      # Remove the "Generate commit log for this push" step
-      
-      # Remove the "Upload changelog artifact" step
           
       - name: Cache Library
         uses: actions/cache@v3
@@ -63,13 +57,6 @@ jobs:
             '{version: $version, commit: $commit}' \
             > unity-ci-cd-system-template/Assets/Scripts/Versioning/version.json
 
-      - name: Log memory stats
-        run: |
-          echo "Free memory (MB):"
-          free -m
-          echo "Disk space (GB):"
-          df -h
-
       - name: Build with Unity (Build Profile)
         uses: game-ci/unity-builder@v4
         with:
@@ -84,8 +71,33 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
 
-      # Remove both "Create release" steps
-
+      - name: Write version info to build output
+        run: |
+          # Get version from generateChangelog job output, or calculate it here
+          git fetch --tags
+          last_tag=$(git tag | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
+          if [[ -z "$last_tag" ]]; then
+            last_tag="v0.0.0"
+          fi
+          current_branch=$(echo "${{ github.ref }}" | sed 's|refs/heads/||')
+          if [[ "$current_branch" == "main" ]]; then
+            base=${last_tag%.*}
+            minor=${last_tag##*.}
+            next_tag="${base}.$((minor + 1))"
+          else
+            clean_branch=$(echo "$current_branch" | sed 's/[^a-zA-Z0-9._-]/-/g')
+            next_tag="${last_tag}-${clean_branch}"
+          fi
+          
+          commit_sha=$(git rev-parse --short HEAD)
+          
+          # Write to the build output directory
+          jq -n \
+            --arg version "$next_tag" \
+            --arg commit "$commit_sha" \
+            '{version: $version, commit: $commit}' \
+            > build/${{ matrix.config.targetPlatform }}/version.json
+      
       - name: Zip the build
         run: |
           mkdir -p temp/project_name
@@ -111,7 +123,7 @@ jobs:
       
           cd temp
           zip -r ../project_name-${{ matrix.config.label }}.zip project_name
-
+      
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
