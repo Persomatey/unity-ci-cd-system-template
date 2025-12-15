@@ -87,7 +87,7 @@ jobs:
           commit_sha=$(git rev-parse --short HEAD)
           mkdir -p project_name/Assets/Scripts/Versioning
           jq -n \
-            --arg version "${{ steps.version.outputs.tag }}" \
+            --arg version "${{ steps.version.outputs.unity_version }}" \
             --arg commit "$commit_sha" \
             '{version: $version, commit: $commit}' \
             > project_name/Assets/Scripts/Versioning/versioning.json
