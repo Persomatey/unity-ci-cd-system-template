@@ -20,6 +20,8 @@ public class VersioningController : MonoBehaviour
 	{
 		data = JsonUtility.FromJson<VersionData>(jsonFile.text);
 
+		Debug.Log($"Loading {jsonFile.name}'s contents:\n{jsonFile.text}"); 
+
 		versionTMP.text = $"v{data.version}";
 		commitTMP.text = data.commit;
 	}
