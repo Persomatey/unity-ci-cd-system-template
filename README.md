@@ -6,9 +6,11 @@ You can check out the sample app on the [Releases tab](https://github.com/Persom
 ## Features 
 - GitHub Releases
      - Builds get submitted to the "Releases" tab of your repo as a new release with separate .zip files for each build. 
-- Version numbers, last Commit SHAs, and defines are added to the project via a .json file.
-     - `\Assets\Scripts\Versioning\versioning.json` in the project which can be displayed in game (on a main menu or something if you want).
+- Last Commit SHA is added to the project via a .json file.
+     - `\Assets\Data\data.json` in the project which can be displayed in game (on a main menu or something if you want).
      - Showcased in the Unity project scene.
+- Version number is updated to Unity's player and can be accessed using `Application.version`.
+- Project name is updated to Unity's player and can be accessed using `Application.productName`.
 - Unity Build Profiles
      - Under the `buildForAllSupportedPlatforms` job, you can change the `strategy`'s `matrix` and include whatever build profiles you want.
      - Showcased in the differences between the built Unity projects, including the defines included in the Build Profiles as displayed in the Unity project scene.
@@ -67,8 +69,8 @@ Used to manually version bump the version number. Should be in the format `X.Y.Z
    - `build.yml`
    - `version-bump.yml`
 5. In `build.yml`'s `buildForAllSupportedPlatforms` step, include the Unity Build Profiles you want generated
-6. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `projectPath` variable to your project folder ????????????????????????????????
-7. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `unityVersion` variable to the version of Unity you're using ?????????????????????????????
+6. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `projectPath` variable to your project folder 
+7. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `unityVersion` variable to the version of Unity you're using 
     - Ensure it uses a version of Unity that GameCI supports on their [tags page](https://hub.docker.com/r/unityci/editor/tags)
 8. In `build.yml`, in the `env`, set the `PROJECT_NAME` variable to your project's name. 
 9. In `build.yml`, in the `env`, set the `UNITY_VERSION` variable to your project's Unity version. 
