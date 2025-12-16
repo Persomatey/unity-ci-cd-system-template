@@ -25,15 +25,15 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
-      max-parallel: 4 # 6 builds at once 
+      max-parallel: 6 # 6 builds at once 
       matrix:
         config:
           - { targetPlatform: "StandaloneWindows64", profilePath: "Assets/Settings/Build Profiles/windows-rel.asset", label: "windows-rel" }
           - { targetPlatform: "StandaloneWindows64", profilePath: "Assets/Settings/Build Profiles/windows-dev.asset", label: "windows-dev" }
           - { targetPlatform: "StandaloneLinux64", profilePath: "Assets/Settings/Build Profiles/linux-rel.asset", label: "linux-rel" }
           - { targetPlatform: "StandaloneLinux64", profilePath: "Assets/Settings/Build Profiles/linux-dev.asset", label: "linux-dev" }
-          #- { targetPlatform: "WebGL", profilePath: "Assets/Settings/Build Profiles/web-rel.asset", label: "web-rel" }
-          #- { targetPlatform: "WebGL", profilePath: "Assets/Settings/Build Profiles/web-dev.asset", label: "web-dev" }
+          - { targetPlatform: "WebGL", profilePath: "Assets/Settings/Build Profiles/web-rel.asset", label: "web-rel" }
+          - { targetPlatform: "WebGL", profilePath: "Assets/Settings/Build Profiles/web-dev.asset", label: "web-dev" }
 
     steps:
       - name: Checkout repository
