@@ -5,28 +5,27 @@ You can check out the sample app on the [Releases tab](https://github.com/Persom
 
 ## Features 
 - GitHub Releases
-     - Builds get submitted to the "Releases" tab of your repo as a new release with separate .zip files for each build. 
+	- Builds get submitted to the "Releases" tab of your repo as a new release with separate .zip files for each build. 
 - Last Commit SHA is added to the project via a .json file.
-     - `\Assets\Data\data.json` in the project which can be displayed in game (on a main menu or something if you want).
-     - Showcased in the Unity project scene.
+	- `\Assets\Data\data.json` in the project which can be displayed in game (on a main menu or something if you want).
+	- Showcased in the Unity project scene.
 - Version number is updated to Unity's player and can be accessed using `Application.version`.
 - Project name is updated to Unity's player and can be accessed using `Application.productName`.
 - Unity Build Profiles
-     - Under the `buildForAllSupportedPlatforms` job, you can change the `strategy`'s `matrix` and include whatever build profiles you want.
-     - Showcased in the differences between the built Unity projects, including the defines included in the Build Profiles as displayed in the Unity project scene.
+	- Under the `buildForAllSupportedPlatforms` job, you can change the `strategy`'s `matrix` and include whatever build profiles you want
+	- Showcased in the differences between the built Unity projects, including the defines included in the Build Profiles as displayed in the Unity project scene.
 - Supports [semantic versioning](https://semver.org/) (MAJOR.MINOR.PATCH).
-     - Every push increments the PATCH number, with MAJOR and MINOR being incremented maually. 
+	- Every push increments the PATCH number, with MAJOR and MINOR being incremented maually. 
 - *(Optional)* Parallel builds (to speed up development, but may need to be turned off if memory is exceeding what your runner supports).  
-     - Under the `buildForAllSupportedPlatforms` job, you can change the `strategy`'s `max-parallel` value accordingly.
+	- Under the `buildForAllSupportedPlatforms` job, you can change the `strategy`'s `max-parallel` value accordingly.
 - *(Optional)* Fail fast support, so you're not creating multiple builds if one fails.
-     - Under the `buildForAllSupportedPlatforms` job, you can change the `strategy`'s `fail-fast` accordingly.
-     - It's set as `false` by default because sometimes there could be a problem with a single build profile or platform -- but it's there if you're stingy with your runner minutes. 
+	- Under the `buildForAllSupportedPlatforms` job, you can change the `strategy`'s `fail-fast` accordingly.
+	- It's set as `false` by default because sometimes there could be a problem with a single build profile or platform -- but it's there if you're stingy with your runner minutes. 
 - *(Optional)* LFS support
-     - Under the `Checkout repository` step, change the `lfs` value accordingly. 
+	- Under the `Checkout repository` step, change the `lfs` value accordingly. 
 - *(Optional)* Concurrent workflows 
-     - Under `concurrency`, set the `cancel-in-progress` value accordingly.
-     - This is mostly to save on runner minutes, but if you don't care about that, leaving it `false` allows you to better track down a bug, especially when collaborating with multiple devs or if you have long build times. 
-
+	- Under `concurrency`, set the `cancel-in-progress` value accordingly.
+	- This is mostly to save on runner minutes, but if you don't care about that, leaving it `false` allows you to better track down a bug, especially when collaborating with multiple devs or if you have long build times. 
 
 ## Workflows 
 
@@ -41,40 +40,42 @@ Build profiles included by default:
 - `webgl-dev`: Dev build for WebGL with DEV defines included 
 - `webgl-rel`: Release build for WebGL with REL defines included 
 
-### Versioning (`version-bump.yml`)
+### Version Bumping (`version-bump.yml`)
 Used to manually version bump the version number. Should be in the format `X.Y.Z`. All future pushes will subsequently start incrementing based on the new MAJOR or MINOR version changes. 
-  - Ex: If the last version before triggering this workflow is `v0.0.42`, and the workflow was triggered with `v0.1.0`, the next `build.yml` workflow run will create the version tag `v0.1.1`. 
+	- Ex: If the last version before triggering this workflow is `v0.0.42`, and the workflow was triggered with `v0.1.0`, the next `build.yml` workflow run will create the version tag `v0.1.1`. 
 
 ## Set up  
-1. Find/Generate Unity license
-    1. Open Unity Hub and log in with your Unity account (if you do not have a current .ulf) then navigate to Preferences > Licenses > Add) 
-    2. Find your `Unity_lic.ulf` file
-        - Windows: `C:\ProgramData\Unity\Unity_lic.ulf`
-        - Mac: `/Library/Application Support/Unity/Unity_lic.ulf`
-        - Linux: `~/.local/share/unity3d/Unity/Unity_lic.ulf`
-2. Hook up Unity Credentials 
-    1. On your GitHub repo's, navigate to Setting > Secrets and variables > Actions
-    2. Create three new Repository secrets
-        - `UNITY_LICENSE` (Paste the contents of your license file into here)
-        - `UNITY_EMAIL` (Add the email address that you use to log into Unity)
-        - `UNITY_PASSWORD` (Add the password that you use to log into Unity)
-3. Create initial version tag
-     1. Navigate to your GitHub version tags page `github.com/username_or_org/repo_name/releases/new`
-     2. Click "Tag: Select Tag"
-     3. Set tag to v0.0.0
-     4. Click "Create"
-     5. Set "Release title"
-     6. Click "Publish release" 
-4. Copy the workflows located in this repo's `.github/workflows/` into your `.github/workflows/` (create this directory if you don't have one already
-   - `build.yml`
-   - `version-bump.yml`
-5. In `build.yml`'s `buildForAllSupportedPlatforms` step, include the Unity Build Profiles you want generated
-6. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `projectPath` variable to your project folder 
-7. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `unityVersion` variable to the version of Unity you're using 
-    - Ensure it uses a version of Unity that GameCI supports on their [tags page](https://hub.docker.com/r/unityci/editor/tags)
-8. In `build.yml`, in the `env`, set the `PROJECT_NAME` variable to your project's name. 
-9. In `build.yml`, in the `env`, set the `UNITY_VERSION` variable to your project's Unity version. 
-10. In `build.yml`, in the `env`, set the `PROJECT_PATH` variable to your project's path. 
+1. Fork/clone this repository (rename repository to match your project)
+	- Or if you already have a project: Copy the workflows located in this repo's `.github/workflows/` into your `.github/workflows/` (create this directory if you don't have one already
+		- `.github/workflows/build.yml`
+		- `.github/workflows/version-bump.yml`
+2. Create initial version tag
+	1. Navigate to your GitHub version tags page `github.com/username_or_org/repo_name/releases/new`
+	2. Click "Tag: Select Tag"
+	3. Set tag to v0.0.0
+	4. Click "Create"
+	5. Set "Release title"
+	6. Click "Publish release"
+3. Rename your Unity project name to whatever you want
+	- `unity_project/` -> `MyAmazingUnityGame/`
+4. Find/Generate Unity license
+	1. Open Unity Hub and log in with your Unity account (if you do not have a current .ulf) then navigate to Preferences > Licenses > Add) 
+	2. Find your `Unity_lic.ulf` file
+		- Windows: `C:\ProgramData\Unity\Unity_lic.ulf`
+		- Mac: `/Library/Application Support/Unity/Unity_lic.ulf`
+		- Linux: `~/.local/share/unity3d/Unity/Unity_lic.ulf`
+5. Hook up Unity Credentials 
+	1. On your GitHub repo's, navigate to Setting > Secrets and variables > Actions
+	2. Create three new Repository secrets
+		- `UNITY_LICENSE` (Paste the contents of your license file into here)
+		- `UNITY_EMAIL` (Add the email address that you use to log into Unity)
+		- `UNITY_PASSWORD` (Add the password that you use to log into Unity)
+6. In `.github/workflows/build.yml`, in the `env`, set the following variables:
+	- `PROJECT_NAME` (line 18) variable to your project's name
+	- `UNITY_VERSION`(line 19) variable to your project's Unity version
+ 		- Ensure it uses a version of Unity that GameCI supports on their [tags page](https://hub.docker.com/r/unityci/editor/tags)
+	- `PROJECT_PATH`(line 20) variable to your project's path
+7. In `.github/workflows/build.yml` in the `buildForAllSupportedPlatforms` job, in the `strategy` `matrix` `config`, include the Unity Build Profiles you want generated
 
 ## Future Plans 
 *No plans on when I'd release these features, would likely depend on my needs for a specific project/boredom/random interest in moving this project along.*
