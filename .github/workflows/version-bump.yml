@@ -1,3 +1,7 @@
+# AUTHOR: Hunter Goodin
+# DESCRIPTION: Manually version bumps the tags to allow for the build workflow to automate versioning on the new bumped version. 
+# NOTES: Please check the README for clearer instructions. 
+
 name: Manual version bump
 
 on:
