@@ -71,12 +71,9 @@ Used to manually version bump the version number. Should be in the format `X.Y.Z
 5. In `.github/workflows/build.yml`, in the `env`, set the following variables:
 	- `PROJECT_NAME` (line 18) variable to your project's name
 	- `UNITY_VERSION`(line 19) variable to your project's Unity version
+ 		- Ensure it uses a version of Unity that GameCI supports on their [tags page](https://hub.docker.com/r/unityci/editor/tags)
 	- `PROJECT_PATH`(line 20) variable to your project's path
-
-5. In `.github/workflows/build.yml` in the `buildForAllSupportedPlatforms` step, include the Unity Build Profiles you want generated
-6. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `projectPath` variable to your project folder 
-7. In `build.yml`'s `Build with Unity (Build Profile)` step, set the `unityVersion` variable to the version of Unity you're using 
-	- Ensure it uses a version of Unity that GameCI supports on their [tags page](https://hub.docker.com/r/unityci/editor/tags)
+6. In `.github/workflows/build.yml` in the `buildForAllSupportedPlatforms` job, in the `strategy` `matrix` `config`, include the Unity Build Profiles you want generated
 
 ## Future Plans 
 *No plans on when I'd release these features, would likely depend on my needs for a specific project/boredom/random interest in moving this project along.*
