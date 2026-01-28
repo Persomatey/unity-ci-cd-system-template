@@ -46,6 +46,7 @@ Used to manually version bump the version number. Should be in the format `X.Y.Z
 
 ## Set up  
 1. Fork/clone this repository (rename repository to match your project)
+	- "Use this template" > "Create a new repository" > etc. 
 	- Or if you already have a project: Copy the workflows located in this repo's `.github/workflows/` into your `.github/workflows/` (create this directory if you don't have one already
 		- `.github/workflows/build.yml`
 		- `.github/workflows/version-bump.yml`
