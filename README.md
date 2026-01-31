@@ -50,32 +50,26 @@ Used to manually version bump the version number. Should be in the format `X.Y.Z
 	- Or if you already have a project: Copy the workflows located in this repo's `.github/workflows/` into your `.github/workflows/` (create this directory if you don't have one already
 		- `.github/workflows/build.yml`
 		- `.github/workflows/version-bump.yml`
-2. Create initial version tag
-	1. Navigate to your GitHub version tags page `github.com/username_or_org/repo_name/releases/new`
-	2. Click "Tag: Select Tag"
-	3. Set tag to v0.0.0
-	4. Click "Create"
-	5. Set "Release title"
-	6. Click "Publish release"
-3. Rename your Unity project name to whatever you want
+2. Rename your Unity project name to whatever you want
 	- `unity_project/` -> `MyAmazingUnityGame/`
-4. Find/Generate Unity license
+3. Find/Generate Unity license
 	1. Open Unity Hub and log in with your Unity account (if you do not have a current .ulf) then navigate to Preferences > Licenses > Add) 
 	2. Find your `Unity_lic.ulf` file
 		- Windows: `C:\ProgramData\Unity\Unity_lic.ulf`
 		- Mac: `/Library/Application Support/Unity/Unity_lic.ulf`
 		- Linux: `~/.local/share/unity3d/Unity/Unity_lic.ulf`
-5. Hook up Unity Credentials 
+4. Hook up Unity Credentials 
 	1. On your GitHub repo's, navigate to Setting > Secrets and variables > Actions
 	2. Create three new Repository secrets
 		- `UNITY_LICENSE` (Paste the contents of your license file into here)
 		- `UNITY_EMAIL` (Add the email address that you use to log into Unity)
 		- `UNITY_PASSWORD` (Add the password that you use to log into Unity)
-6. In `.github/workflows/build.yml`, in the `env`, set the following variables:
+5. In `.github/workflows/build.yml`, in the `env`, set the following variables:
 	- `PROJECT_NAME` (line 18) variable to your project's name
 	- `UNITY_VERSION`(line 19) variable to your project's Unity version
  		- Ensure it uses a version of Unity that GameCI supports on their [tags page](https://hub.docker.com/r/unityci/editor/tags)
 	- `PROJECT_PATH`(line 20) variable to your project's path
+6. In `.github/workflows/build.yml`, in the `on`, set which branches you want to trigger builds from on `push` and on `pull_request` 
 7. In `.github/workflows/build.yml` in the `buildForAllSupportedPlatforms` job, in the `strategy` `matrix` `config`, include the Unity Build Profiles you want generated
 
 ## Future Plans 
